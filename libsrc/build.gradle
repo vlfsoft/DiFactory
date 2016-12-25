@@ -1,0 +1,38 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+Properties versionProps = new Properties()
+versionProps.loadFromXML(new FileInputStream(file('../../../versionConfig.xml')))
+
+def junitVersion = versionProps ['junitVersion']
+def findBugsJsr305Version = versionProps ['findBugsJsr305Version']
+
+sourceSets {
+
+    main {
+        java.srcDir '../../AnnotationsProcessorUtil/src/main/java'
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // requires mavenCentral()
+    compile "com.google.code.findbugs:jsr305:$findBugsJsr305Version"
+
+    compileOnly project(':sdannotations')
+
+    // https://developer.android.com/training/testing/unit-testing/local-unit-tests.html
+    // Set Up Your Testing Environment
+    // Required -- JUnit 4 framework
+    testCompile "junit:junit:$junitVersion"
+    // Optional -- Mockito framework
+    // testCompile "org.mockito:mockito-core:$mockito_coreVersion"
+    // Set Up Your Testing Environment
+
+    // compile "com.squareup:javapoet:$javapoetVersion"
+}

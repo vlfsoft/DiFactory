@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+
+Properties versionProps = new Properties()
+versionProps.loadFromXML(new FileInputStream(file('../../../versionConfig.xml')))
+
+android {
+
+    signingConfigs {
+        config {
+            Properties props = new Properties()
+            props.loadFromXML(new FileInputStream(file('../../../signingConfig.xml')))
+
+            keyAlias props['keyAlias']
+            keyPassword props['keyPassword']
+            storeFile file(props['storeFile'])
+            storePassword props['storePassword']
+        }
+    }
+
+    compileSdkVersion Integer.parseInt(versionProps.getProperty("compileSdkVersion")).intValue()
+    buildToolsVersion versionProps ['buildToolsVersion']
+    defaultConfig {
+        applicationId 'vlfsoft.dummy'
+        minSdkVersion Integer.parseInt(versionProps.getProperty("minSdkVersion")).intValue()
+        targetSdkVersion Integer.parseInt(versionProps.getProperty("targetSdkVersion")).intValue()
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), '../../../proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
+            testCoverageEnabled true
+        }
+    }
+    productFlavors {
+    }
+
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+
+}
+

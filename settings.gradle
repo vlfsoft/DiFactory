@@ -1,0 +1,3 @@
+include ':dummy', ':libsrc', ':difactorytest'
+include ':sdannotations'
+project(':sdannotations').projectDir = new File(settingsDir, '../SdAnnotations/libsrc')
