@@ -3,12 +3,12 @@ package vlfsoft.common.annotations.di;
 import java.security.InvalidParameterException;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 
 import vlfsoft.common.annotations.processor.ProcessorException;
 import vlfsoft.common.annotations.processor.ProcessorUtil;
 
 class DiFactoryGeneratedClassJavaSourceData {
+
     String factoryPackageName;
 
     String factoryClassName;
@@ -17,26 +17,21 @@ class DiFactoryGeneratedClassJavaSourceData {
     String factoryClassifiedNameA;
     String factoryClassifiedName;
 
-    boolean generateDefaultFactoryImplementationModule = true;
+    boolean generateDefaultFactoryImplementationModule;
 
     private int mHashCode;
 
-    DiFactoryGeneratedClassJavaSourceData(DiFactoryProcessor aProcessor, Element aAnnotatedElement, DiFactory aDiFactoryAnnotation) throws ProcessorException {
+    DiFactoryGeneratedClassJavaSourceData(Element aAnnotatedElement) throws ProcessorException {
 
-        String defaultPackageName = ProcessorUtil.getPackageElement(aAnnotatedElement).toString();
+        factoryPackageName = ProcessorUtil.getPackageElement(aAnnotatedElement).toString();
 
-        factoryPackageName = aDiFactoryAnnotation.factoryPackageName().isEmpty() ? defaultPackageName : aDiFactoryAnnotation.factoryPackageName();
+        Element interfaceContainerElement = aAnnotatedElement.getEnclosingElement();
 
-        factoryClassName = aDiFactoryAnnotation.factoryClassName();
+        // Build factoryClassName based on Interface-container name to which the method relate to.
+        factoryClassName = interfaceContainerElement.getSimpleName().toString() + "Factory";
 
-        if (factoryClassName.isEmpty()) {
-            if (aAnnotatedElement.getKind() == ElementKind.METHOD) {
-                /* Build factoryClassName based on Interface name to which the method relate to. */
-                factoryClassName = aAnnotatedElement.getEnclosingElement().getSimpleName().toString() + "Factory";
-            }else if (aAnnotatedElement.getKind() == ElementKind.CLASS || aAnnotatedElement.getKind() == ElementKind.INTERFACE) {
-                aProcessor.printDiagnosticError(true, "factoryClassName for annotated class %s can't be empty", aAnnotatedElement.toString());
-            }
-        }
+        DiFactory diFactoryAnnotation = interfaceContainerElement.getAnnotation(DiFactory.class);
+        generateDefaultFactoryImplementationModule = diFactoryAnnotation == null || diFactoryAnnotation.value();
 
         factoryClassifiedName = factoryPackageName + "." + factoryClassName;
         mHashCode = factoryClassifiedName.hashCode();

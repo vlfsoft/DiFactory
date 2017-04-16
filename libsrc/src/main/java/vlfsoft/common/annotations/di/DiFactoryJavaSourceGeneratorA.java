@@ -6,8 +6,8 @@ import static vlfsoft.common.annotations.di.DiFactoryProcessor.INDENT;
 
 class DiFactoryJavaSourceGeneratorA extends DiFactoryJavaSourceGenerator {
 
-    public DiFactoryJavaSourceGeneratorA(Class<DiFactory> aAnnotationClass, DiFactoryGeneratedClassJavaSourceData aDiFactoryGeneratedClassJavaSourceData, List<DiFactoryAnnotatedClassJavaSourceData> aAnnotatedClassesInFactory) {
-        super(aAnnotationClass, aDiFactoryGeneratedClassJavaSourceData, aAnnotatedClassesInFactory);
+    DiFactoryJavaSourceGeneratorA(DiFactoryGeneratedClassJavaSourceData aDiFactoryGeneratedClassJavaSourceData, List<DiFactoryAnnotatedClassJavaSourceData> aAnnotatedClassesInFactory) {
+        super(aDiFactoryGeneratedClassJavaSourceData, aAnnotatedClassesInFactory);
     }
 
     protected String generateBeginClassBlock() {
@@ -56,7 +56,7 @@ class DiFactoryJavaSourceGeneratorA extends DiFactoryJavaSourceGenerator {
     private String generateSingltonFactoryInstanceBlockAssignment() {
         String codeBlock = "";
         for (DiFactoryAnnotatedClassJavaSourceData annotatedClassInFactory : mAnnotatedClassesInFactory) {
-            if (annotatedClassInFactory.diFactoryAnnotation.singleton()) {
+            if (annotatedClassInFactory.singleton) {
                 codeBlock += generateSingltonFactoryInstanceBlockAssignment(annotatedClassInFactory);
             }
         }
@@ -65,39 +65,39 @@ class DiFactoryJavaSourceGeneratorA extends DiFactoryJavaSourceGenerator {
 
     private String generateSingltonFactoryInstanceBlockAssignment(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory) {
         String codeBlock = "";
-        for (String singletonInstanceName : aAnnotatedClassInFactory.singletonInstanceNames) {
-                codeBlock += generateSingltonFactoryInstanceBlockAssignment(aAnnotatedClassInFactory, singletonInstanceName);
+        for (String singletonInstanceNameSuffix : aAnnotatedClassInFactory.singletonInstanceNameSuffixes) {
+                codeBlock += generateSingltonFactoryInstanceBlockAssignment(aAnnotatedClassInFactory, singletonInstanceNameSuffix);
         }
         return codeBlock;
     }
 
-    private String generateSingltonFactoryInstanceBlockAssignment(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory, String aSingletonInstanceName) {
+    private String generateSingltonFactoryInstanceBlockAssignment(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory, String aSingletonInstanceNameSuffix) {
         return
-//                singltonFactory1ClassInstance = getInstance().injectSingltonFactory1ClassInstance();
-                String.format("%s%ssinglton%sInstance%s = getInstance().injectSinglton%sInstance%s();\n", INDENT, INDENT,
-                        aAnnotatedClassInFactory.className, aSingletonInstanceName, aAnnotatedClassInFactory.className, aSingletonInstanceName) +
-                "";
+//                getInstance().injectSingltonFactory1ClassInstance();
+                String.format("%s%sgetInstance().injectSinglton%sInstance%s();\n", INDENT, INDENT,
+                        aAnnotatedClassInFactory.className, aSingletonInstanceNameSuffix) +
+                        "";
     }
 
-    protected String generateSingletonBlock(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory, String aSingletonInstanceName) {
+    protected String generateSingletonBlock(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory, String aSingletonInstanceNameSuffix) {
         return "" +
 //        @CreationalPattern.Singleton
                 // String.format("%s@CreationalPattern.Singleton\n", INDENT) +
-//        private static Factory1ClassA singltonFactory1ClassInstance;
-                String.format("%sprivate static %s singlton%sInstance%s;\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.className, aSingletonInstanceName) +
+//        protected static Factory1ClassA singltonFactory1ClassInstance;
+                String.format("%sprotected static %s %s;\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.singltonClassNameInstanceField(aSingletonInstanceNameSuffix)) +
 //                "\n" +
                 // String.format("%s@CreationalPattern.Singleton\n", INDENT) +
 //        abstract protected Factory1ClassA injectSingltonFactory1ClassInstance();
-                String.format("%sabstract protected %s injectSinglton%sInstance%s();\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.className, aSingletonInstanceName) +
+                String.format("%sabstract protected %s %s;\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.injectSingltonClassNameInstanceMethod(aSingletonInstanceNameSuffix)) +
 //                "\n" +
 //        @CreationalPattern.AbstractFactory
                 // String.format("%s@CreationalPattern.AbstractFactory\n", INDENT) +
 //        @CreationalPattern.FactoryMethod
                 // String.format("%s@CreationalPattern.FactoryMethod\n", INDENT) +
 //        public Factory1ClassA ofFactory1Class() {
-                String.format("%spublic %s of%s%s() {\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.className, aSingletonInstanceName) +
+                String.format("%spublic %s %s {\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.ofClassNameSuffixMethod(aSingletonInstanceNameSuffix)) +
 //            return singltonFactory1ClassInstance;
-                String.format("%s%sreturn singlton%sInstance%s;\n", INDENT, INDENT, aAnnotatedClassInFactory.className, aSingletonInstanceName) +
+                String.format("%s%sreturn %s;\n", INDENT, INDENT, aAnnotatedClassInFactory.singltonClassNameInstanceField(aSingletonInstanceNameSuffix)) +
 //        }
                 String.format("%s}\n", INDENT) +
                 "";
@@ -110,7 +110,7 @@ class DiFactoryJavaSourceGeneratorA extends DiFactoryJavaSourceGenerator {
 //        @CreationalPattern.FactoryMethod
                 // String.format("%s@CreationalPattern.FactoryMethod\n", INDENT) +
 //        abstract public Factory1ClassA ofFactory1Class();
-                String.format("%sabstract public %s of%s();\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.className) +
+                String.format("%sabstract public %s %s;\n", INDENT, aAnnotatedClassInFactory.classNameA, aAnnotatedClassInFactory.ofClassNameMethod()) +
                 "\n" +
                 "";
     }

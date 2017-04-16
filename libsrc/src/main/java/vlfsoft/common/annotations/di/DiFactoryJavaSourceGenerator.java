@@ -4,12 +4,10 @@ import java.util.List;
 
 abstract class DiFactoryJavaSourceGenerator {
 
-    Class<DiFactory> mAnnotationClass;
     DiFactoryGeneratedClassJavaSourceData mDiFactoryGeneratedClassJavaSourceData;
     List<DiFactoryAnnotatedClassJavaSourceData> mAnnotatedClassesInFactory;
 
-    DiFactoryJavaSourceGenerator(Class<DiFactory> aAnnotationClass, DiFactoryGeneratedClassJavaSourceData aDiFactoryGeneratedClassJavaSourceData, List<DiFactoryAnnotatedClassJavaSourceData> aAnnotatedClassesInFactory) {
-        mAnnotationClass = aAnnotationClass;
+    DiFactoryJavaSourceGenerator(DiFactoryGeneratedClassJavaSourceData aDiFactoryGeneratedClassJavaSourceData, List<DiFactoryAnnotatedClassJavaSourceData> aAnnotatedClassesInFactory) {
         mDiFactoryGeneratedClassJavaSourceData = aDiFactoryGeneratedClassJavaSourceData;
         mAnnotatedClassesInFactory = aAnnotatedClassesInFactory;
     }
@@ -32,14 +30,14 @@ abstract class DiFactoryJavaSourceGenerator {
                 "";
     }
 
-    protected String generatePackageBlock() {
+    private String generatePackageBlock() {
         return
 //        package vlfsoft.difactorytest.factory1;
                 String.format("package %s;\n", mDiFactoryGeneratedClassJavaSourceData.factoryPackageName) +
                         "";
     }
 
-    protected String generateImportBlock() {
+    private String generateImportBlock() {
         String importBlock = "";
         for (DiFactoryAnnotatedClassJavaSourceData annotatedClassInFactory : mAnnotatedClassesInFactory) {
             importBlock += generateImportBlock(annotatedClassInFactory);
@@ -53,15 +51,15 @@ abstract class DiFactoryJavaSourceGenerator {
 
     abstract protected String generateBeginClassBlock();
 
-    protected String generateConstructorBlock() {
+    private String generateConstructorBlock() {
         return
                 "";
     }
 
-    protected String generateSourceBlock() {
+    private String generateSourceBlock() {
         String codeBlock = "";
         for (DiFactoryAnnotatedClassJavaSourceData annotatedClassInFactory : mAnnotatedClassesInFactory) {
-            if (annotatedClassInFactory.diFactoryAnnotation.singleton())
+            if (annotatedClassInFactory.singleton)
                 codeBlock += generateSingletonBlock(annotatedClassInFactory);
             else
                 codeBlock += generateNonSingletonBlock(annotatedClassInFactory);
@@ -74,10 +72,10 @@ abstract class DiFactoryJavaSourceGenerator {
                 "";
     }
 
-    protected String generateSingletonBlock(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory) {
+    private String generateSingletonBlock(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory) {
 
         String codeBlock = "";
-        for (String singletonInstanceName : aAnnotatedClassInFactory.singletonInstanceNames) {
+        for (String singletonInstanceName : aAnnotatedClassInFactory.singletonInstanceNameSuffixes) {
             codeBlock += generateSingletonBlock(aAnnotatedClassInFactory, singletonInstanceName);
             codeBlock += "\n";
         }
@@ -88,7 +86,7 @@ abstract class DiFactoryJavaSourceGenerator {
 
     abstract protected String generateNonSingletonBlock(DiFactoryAnnotatedClassJavaSourceData aAnnotatedClassInFactory);
 
-    protected String generateEndClassBlock() {
+    private String generateEndClassBlock() {
         return
                 "}\n" +
                         "";
